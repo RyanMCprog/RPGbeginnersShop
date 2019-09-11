@@ -1,0 +1,6 @@
+﻿ItemId,ItemName,Damage,Defense,Rarity,ShopSell,ItemValue
+0,RareSword,40,20,9,20,90
+1,RareSheild,20,50,9,35,90
+2,RareGreatSword,59,30,10,50,100
+3,BallnChain,50,40,10,40,100
+4,PlasticSword,10,10,999,60,1
