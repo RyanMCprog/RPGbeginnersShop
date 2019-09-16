@@ -50,6 +50,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="MyInventory.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="RareStoneShop.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

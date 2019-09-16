@@ -14,7 +14,7 @@ namespace RPG_BeginnersShop
         {
             int days = 1;
             Player PChealth = new Player();
-            int Fightread = 0;
+            
             int ShopNum = -1;
             int RareShopNum = -1;
             int Rndnum = 0;
@@ -28,10 +28,12 @@ namespace RPG_BeginnersShop
             Items AT = new Items();
             Player Money = new Player();
             int Tired = 0;
-            //making a list of shop items for an excel sheet
-            List<Items> MyInventory = new List<Items>();
+            //making a list of shop items for an excel sheet and loading the inventory if the player saved
+            string Blacksmith = "MyInventory.csv";
+            List<Items> MyInventory = LoadCsv(Blacksmith);
             List<Items> ShopInventory = new List<Items>();
             List<Items> RareStoneInventory = new List<Items>();
+
             using (StreamReader si = new StreamReader("ShopItems.csv"))
             {
                 si.ReadLine();
@@ -78,7 +80,7 @@ namespace RPG_BeginnersShop
             //main loop where the player chooses what to do
             while (cmd.ToLower() != "leave")
             {
-                cmd = AT.Ask("Want do you want? Buy, sell, inventory, fight, mine, sleep, RareStones?");
+                cmd = AT.Ask("Want do you want? Buy, sell, inventory, fight, mine, sleep, RareStones, save, or leave?");
                 lcmd = cmd.ToLower();
                 //purchasing items from the shop
                 if (lcmd == "buy")
@@ -109,14 +111,14 @@ namespace RPG_BeginnersShop
                             Money.coins -= ShopInventory[tmp].ShopSell;
                             Console.WriteLine("You have bought " + ShopInventory[tmp].ItemName);
                             Console.WriteLine("You now have " + Money.coins + " coins");
-                            Fightread++;
+                            
                        }
                     }
                 }
                 //selling items from the shop
                 if (lcmd == "sell")
                 {
-                    if (Fightread != 0)
+                    if (MyInventory.Any())
                     {
                         InventSpace = -1;
                         foreach (Items so in MyInventory)
@@ -135,7 +137,7 @@ namespace RPG_BeginnersShop
                             Console.WriteLine("You have sold a " + MyInventory[tmp].ItemName);
                             Money.coins = Money.coins + MyInventory[tmp].ItemValue;
                             Console.WriteLine("You now have " + Money.coins + " coins");
-                            Fightread--;
+                            
                             MyInventory.RemoveAt(tmp);
                         }
                     }
@@ -147,7 +149,7 @@ namespace RPG_BeginnersShop
                 //Fighting the shopkeeper 
                 if (lcmd == "fight")
                 {
-                    if (Fightread != 0)
+                    if (MyInventory.Any())
                     {
                         string AreYouReady = AT.Ask("So, you think you are ready to go on your quest? (Y/N)");
                         if (AreYouReady == "y")
@@ -155,6 +157,7 @@ namespace RPG_BeginnersShop
                             PChealth.EnemyHealth = 100;
                             PChealth.Health = 100;
                             Console.WriteLine("Than face me!");
+                            //if the player still has health then the player chooses what they want to attack with
                             while (PChealth.Health > 0 && PChealth.EnemyHealth > 0)
                             {
                                 InventSpace = -1;
@@ -192,7 +195,7 @@ namespace RPG_BeginnersShop
                                     PChealth.EnemyHealth -= (MyInventory[tmp].Damage + PChealth.playerbaseDamage - PChealth.EnemyDefense);
                                     Console.WriteLine("The Shopkeeper now has " + PChealth.EnemyHealth + " health left.");
                                 }
-
+                                //if the shopkeeper still has health then the player will choose what they will defend with
                                 if (PChealth.EnemyHealth > 0)
                                 {
                                     InventSpace = -1;
@@ -241,8 +244,7 @@ namespace RPG_BeginnersShop
                                 Console.WriteLine("You were knocked unconscious and lost all items");
                                 Money.coins = 0;
                                 Money.RareStone = 0;
-                                MyInventory.RemoveRange(0, Fightread);
-                                Fightread = 0;
+                                MyInventory.Clear();
                             }
                             else
                             {
@@ -273,7 +275,7 @@ namespace RPG_BeginnersShop
                             Found.ItemValue = ShopInventory[0].ItemValue;
                             MyInventory.Add(Found);
                             Console.WriteLine("You found an unimpressive Branch.");
-                            Fightread++;
+                            
                         }
                         else if(Rndnum > 40)
                         {
@@ -288,7 +290,7 @@ namespace RPG_BeginnersShop
                             FoundBt.ItemValue = ShopInventory[Rndnum].ItemValue;
                             MyInventory.Add(FoundBt);
                             Console.WriteLine("You managed to find something in a bush");
-                            Fightread++;
+                            
                         }
                         else if(Rndnum < 20 && Rndnum > 10)
                         {
@@ -334,7 +336,7 @@ namespace RPG_BeginnersShop
                         InventSpace++;
                     }
                 }
-                //rare stones 
+                //purchase items use the rarestones the player get while mining
                 if(lcmd == "rarestones")
                 {
                     foreach (Items rt in RareStoneInventory)
@@ -363,11 +365,67 @@ namespace RPG_BeginnersShop
                             Money.RareStone -= RareStoneInventory[tmp].ShopSell;
                             Console.WriteLine("You have bought " + RareStoneInventory[tmp].ItemName);
                             Console.WriteLine("You now have " + Money.RareStone + " Rare Stones");
-                            Fightread++;
+                            
                         }
                     }
                 }
+                //saves the game
+                if(lcmd == "save")
+                {
+                    SaveCsv(MyInventory, "MyInventory.csv");
+                    Console.WriteLine("Inventory has been saved");
+                }
             }
+        }
+        private static void SaveCsv(List<Items> Myinventroy, string fileName)
+        {
+            using (StreamWriter sw = new StreamWriter(fileName))
+            {
+                sw.WriteLine("ItemId,ItemName,Damage,Defense,Rarity,ShopSell,ItemValue");
+                foreach(Items im in Myinventroy)
+                {
+                    sw.WriteLine(
+                        $"{im.ItemId}," +
+                        $"{im.ItemName}," +
+                        $"{im.Damage}," +
+                        $"{im.Defense}," +
+                        $"{im.rarity}," +
+                        $"{im.ShopSell}," +
+                        $"{im.ItemValue}");
+                }
+                sw.Close();
+            }
+        }
+        //loads the player's inventory when the game opens again
+        static List<Items> LoadCsv(string _FileName)
+        {
+            List<string> FileLines = new List<string>();
+
+            using (StreamReader sr = new StreamReader(_FileName))
+            {
+                sr.ReadLine();
+                while (!sr.EndOfStream)
+                {
+                    FileLines.Add(sr.ReadLine());
+                }
+            }
+            string[] tmpValues;
+            List<Items> Tools = new List<Items>();
+            foreach(string line in FileLines)
+            {
+                
+                tmpValues = line.Split(',');
+                Items tmpItem = new Items();
+                tmpItem.ItemId = int.Parse(tmpValues[0]);
+                tmpItem.ItemName = tmpValues[1];
+                tmpItem.Damage = int.Parse(tmpValues[2]);
+                tmpItem.Defense = int.Parse(tmpValues[3]);
+                tmpItem.rarity = int.Parse(tmpValues[4]);
+                tmpItem.ShopSell = int.Parse(tmpValues[5]);
+                tmpItem.ItemValue = int.Parse(tmpValues[6]);
+                Tools.Add(tmpItem);
+            }
+            return Tools;
         }
     }
 }
