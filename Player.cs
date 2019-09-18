@@ -12,12 +12,12 @@ namespace RPG_BeginnersShop
         public int EnemyDefense = 15;
         public int EnemyBaseDamage = 30;
     }
+
     public class Player : Enemy
     {
         public int RareStone = 0;
         public int coins = 0;
         public int Health = 100;
-       
         public int playerbaseDamage = 11;
     }
 }

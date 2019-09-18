@@ -11,8 +11,8 @@ namespace RPG_BeginnersShop
     {
         public int ItemId;
         public int ItemValue;
-
     }
+
     public class Items : MostBasicItem
     {
         public string ItemName;
@@ -21,12 +21,25 @@ namespace RPG_BeginnersShop
         public int rarity;
         public int ShopSell;
         
-        
         public string Ask (string _val)
         {
             Console.Write(_val);
+
             return Console.ReadLine();
         }
+
+        public Items()
+        {
+
+        }
+        
+        public Items(string itemName, int damage, int defense, int _rarity, int shopSell)
+        {
+            ItemName = itemName;
+            Damage = damage;
+            Defense = defense;
+            rarity = _rarity;
+            ShopSell = shopSell;
+        }
     }
-    
 }
